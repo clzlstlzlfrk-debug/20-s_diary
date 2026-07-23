@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>몽글몽글 웹 다이어리 🌸</title>
+  <!-- Google Fonts: Gowun Dodum, Outfit, Noto Sans KR -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" id="faviconLink" href="data:,">
+  <style id="customCursorStyle"></style>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- 상단 포근하고 컴팩트한 헤더 -->
+    <header class="app-header">
+      <div class="header-brand">
+        <span id="brandIconDisplay" class="brand-icon clickable-profile" title="프로필 & 다이어리 설정 변경">🌸</span>
+        <div class="brand-text">
+          <h1><span id="diaryNameText">몽글몽글 다이어리</span></h1>
+          <p class="brand-subtitle" id="diarySubtitleText">오늘 하루도 고생 많았어요, 나만의 속도로 쉬어가요.</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <!-- 로컬 파일(diary_data.json) 연결 상태 표시 -->
+        <span id="fileConnStatus" class="file-conn-status" title="클릭해서 diary_data.json 파일에 연결하면, 프로필과 일기가 이 파일에 자동으로 저장돼요.">📁 파일 미연결</span>
+
+        <!-- 햄버거 메뉴 -->
+        <div class="hamburger-menu-wrap" id="hamburgerMenuWrap">
+          <button id="btnHamburger" class="hamburger-btn" title="더 보기">
+            <span class="ham-bar"></span>
+            <span class="ham-bar"></span>
+            <span class="ham-bar"></span>
+          </button>
+          <div id="hamburgerDropdown" class="hamburger-dropdown hidden">
+            <button id="btnConnectFile" class="dropdown-item" title="diary_data.json 파일을 선택해서 자동 저장을 연결해요">
+              <span>📁</span> diary_data.json 연결
+            </button>
+            <div class="dropdown-divider"></div>
+            <button id="btnGistSync" class="dropdown-item" title="GitHub 깃허브 동기화">
+              <span>☁️</span> Gist 동기화
+            </button>
+            <div class="dropdown-divider"></div>
+            <button id="btnExport" class="dropdown-item" title="JSON 백업">
+              <span>💾</span> 백업
+            </button>
+            <button id="btnImport" class="dropdown-item" title="JSON 불러오기">
+              <span>📂</span> 불러오기
+            </button>
+          </div>
+        </div>
+        <input type="file" id="fileImport" accept=".json" style="display: none;">
+      </div>
+    </header>
+
+    <!-- 메인 레이아웃 (달력 + 일기 에디터) -->
+    <main class="main-layout">
+
+      <!-- 사이드바: 캘린더 -->
+      <aside class="calendar-card">
+        <div class="calendar-top-bar">
+          <div class="month-nav">
+            <button id="btnPrevMonth" class="nav-arrow" title="이전 달">◀</button>
+            <h2 id="calendarTitle" class="month-title">2026년 7월</h2>
+            <button id="btnNextMonth" class="nav-arrow" title="다음 달">▶</button>
+          </div>
+          <button id="btnToday" class="today-tag">오늘</button>
+        </div>
+
+        <div class="weekday-grid">
+          <span class="sun">일</span>
+          <span>월</span>
+          <span>화</span>
+          <span>수</span>
+          <span>목</span>
+          <span>금</span>
+          <span class="sat">토</span>
+        </div>
+
+        <!-- 캘린더 일수 그리드 -->
+        <div id="calendarGrid" class="calendar-grid">
+          <!-- JS dynamic calendar cells -->
+        </div>
+
+        <div class="calendar-info-banner">
+          <span class="info-emoji">🧸</span>
+          <p>일기 작성 후 상단 <b>💾 이모지 버튼</b>을 눌러 저장하세요.</p>
+        </div>
+
+        <!-- 감정 관리를 위한 감정 통계 (주간 / 월간) -->
+        <div class="mood-stats-section">
+          <div class="mood-stats-block">
+            <div class="mood-stats-header">
+              <span class="mood-stats-title">📊 이번 주 감정</span>
+            </div>
+            <div id="weekMoodSummary" class="mood-emoji-summary"></div>
+            <div id="weekMoodChart" class="mood-bar-chart"></div>
+          </div>
+
+          <div class="mood-stats-block month-block">
+            <button id="btnToggleMonthMood" class="mood-stats-toggle-btn">📅 이번 달 감정 통계 보기 ▾</button>
+            <div id="monthMoodPanel" class="mood-stats-month-panel hidden">
+              <div id="monthMoodSummary" class="mood-emoji-summary"></div>
+              <div id="monthMoodChart" class="mood-bar-chart"></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- 에디터 영역 -->
+      <section class="editor-card">
+        <!-- 슬림 일기 날짜 & 저장 이모지 버튼 -->
+        <div class="editor-header-bar">
+          <div class="selected-date-info">
+            <span class="cal-icon">📅</span>
+            <h2 id="selectedDateText" class="date-text">2026년 07월 21일 (화)</h2>
+          </div>
+          <div class="save-controls">
+            <button id="btnEditToggle" class="edit-toggle-btn" title="눌러야 일기를 수정할 수 있어요">✏️ 수정</button>
+            <span id="saveStatusIndicator" class="save-status-pill">✨ 로드 완료</span>
+            <button id="btnSaveDiary" class="icon-save-btn" title="일기 저장하기">💾</button>
+            <button id="btnDeleteDiary" class="icon-save-btn danger-btn" title="이 날짜 일기 삭제하기">🗑️</button>
+          </div>
+        </div>
+
+        <!-- 슬림 기분 & 날씨 선택기 (한 줄 컴팩트 배치) -->
+        <div class="meta-selectors-container compact-selectors">
+          <div class="meta-selector-group">
+            <span class="meta-label">기분:</span>
+            <div id="moodOptions" class="pill-options">
+              <button class="pill-btn" data-mood="😆" title="신나고 즐거움"><span class="emoji">😆</span><span class="label">즐거움</span></button>
+              <button class="pill-btn" data-mood="😄" title="기쁘고 즐거움"><span class="emoji">😄</span><span class="label">기쁨</span></button>
+              <button class="pill-btn active" data-mood="😐" title="평범한 보통 하루"><span class="emoji">😐</span><span class="label">보통</span></button>
+              <button class="pill-btn" data-mood="😢" title="슬프고 속상함"><span class="emoji">😢</span><span class="label">슬픔</span></button>
+              <button class="pill-btn" data-mood="😠" title="화나고 짜증남"><span class="emoji">😠</span><span class="label">짜증</span></button>
+            </div>
+          </div>
+
+          <div class="meta-selector-group">
+            <span class="meta-label">날씨:</span>
+            <div id="weatherOptions" class="pill-options">
+              <button class="pill-btn" data-weather="🥵" title="폭염"><span class="emoji">🥵</span></button>
+              <button class="pill-btn active" data-weather="☀️" title="맑음"><span class="emoji">☀️</span></button>
+              <button class="pill-btn" data-weather="🌥️" title="흐림"><span class="emoji">🌥️</span></button>
+              <button class="pill-btn" data-weather="⛅" title="구름"><span class="emoji">⛅</span></button>
+              <button class="pill-btn" data-weather="🌧️" title="비"><span class="emoji">🌧️</span></button>
+              <button class="pill-btn" data-weather="❄️" title="눈"><span class="emoji">❄️</span></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 제목 입력 -->
+        <div class="title-field-wrap">
+          <input type="text" id="diaryTitleInput" placeholder="일기 제목을 적어주세요..." autocomplete="off">
+        </div>
+
+        <!-- 에디터 툴바 -->
+        <div class="editor-tools-bar">
+          <label for="imageFileInput" class="tool-chip highlight">
+            <span>🖼️ 사진 추가</span>
+            <input type="file" id="imageFileInput" accept="image/*" multiple style="display:none;">
+          </label>
+          <button id="btnClearDiary" class="tool-chip danger" title="작성 중인 내용 초기화">
+            <span>🧹 초기화</span>
+          </button>
+          <div class="mode-tip">
+            💡 사진 클릭 시 <b>글속 삽입 (📝)</b> 과 <b>자유 이동 (📌)</b> 모드 전환
+          </div>
+        </div>
+
+        <!-- 본문 & 자유 배치 캔버스 -->
+        <div class="paper-canvas-wrap" id="paperBodyWrapper">
+          <!-- 자유 배치 스티커 캔버스 -->
+          <div id="freeCanvas" class="free-canvas"></div>
+
+          <!-- 글 에디터 -->
+          <div id="diaryContentEditor" class="diary-editor-area" contenteditable="true" placeholder="오늘 하루는 어땠나요? 마음 속 생각들을 자유롭게 적어보세요... (이미지를 복사/붙여넣거나 드래그해도 추가돼요)"></div>
+        </div>
+
+        <!-- 일기 작성 하단으로 이동한 [오늘 한 일 3가지] & [셀프 칭찬 일기 3가지] -->
+        <div class="bottom-extra-section">
+          <div class="extra-sections-toggle-bar">
+            <label class="toggle-checkbox-label">
+              <input type="checkbox" id="chkToggleTasks">
+              <span>📝 오늘 한 일 3가지 작성</span>
+            </label>
+            <label class="toggle-checkbox-label">
+              <input type="checkbox" id="chkTogglePraise">
+              <span>💖 나를 위한 셀프 칭찬 3가지 작성</span>
+            </label>
+          </div>
+
+          <!-- 접이식(Accordion) 카드 영역 -->
+          <div id="collapsibleCardsWrapper" class="collapsible-cards-wrapper">
+            <!-- 오늘 한 일 3가지 접이식 카드 -->
+            <div id="tasksCard" class="foldable-card hidden">
+              <div class="foldable-header">
+                <span class="fold-title">📝 오늘 한 일 3가지</span>
+                <button class="fold-toggle-btn" id="btnFoldTasks">▲ 접기</button>
+              </div>
+              <div class="foldable-body" id="bodyTasksCard">
+                <div class="input-item-row">
+                  <span class="num-badge">1</span>
+                  <input type="text" id="taskInput1" class="foldable-input" placeholder="오늘 한 일 첫 번째...">
+                </div>
+                <div class="input-item-row">
+                  <span class="num-badge">2</span>
+                  <input type="text" id="taskInput2" class="foldable-input" placeholder="오늘 한 일 두 번째...">
+                </div>
+                <div class="input-item-row">
+                  <span class="num-badge">3</span>
+                  <input type="text" id="taskInput3" class="foldable-input" placeholder="오늘 한 일 세 번째...">
+                </div>
+              </div>
+            </div>
+
+            <!-- 셀프 칭찬 일기 3가지 접이식 카드 -->
+            <div id="praiseCard" class="foldable-card hidden">
+              <div class="foldable-header">
+                <span class="fold-title">💖 나를 위한 셀프 칭찬 3가지</span>
+                <button class="fold-toggle-btn" id="btnFoldPraise">▲ 접기</button>
+              </div>
+              <div class="foldable-body" id="bodyPraiseCard">
+                <div class="input-item-row">
+                  <span class="num-badge">1</span>
+                  <input type="text" id="praiseInput1" class="foldable-input" placeholder="오늘 나를 칭찬할 일 1...">
+                </div>
+                <div class="input-item-row">
+                  <span class="num-badge">2</span>
+                  <input type="text" id="praiseInput2" class="foldable-input" placeholder="오늘 나를 칭찬할 일 2...">
+                </div>
+                <div class="input-item-row">
+                  <span class="num-badge">3</span>
+                  <input type="text" id="praiseInput3" class="foldable-input" placeholder="오늘 나를 칭찬할 일 3...">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <!-- 이미지 클릭 시 팝업 제어 바 -->
+  <div id="imageControlPopup" class="image-control-popup hidden">
+    <button id="btnModeInline" class="popup-chip inline-chip">
+      <span>📝</span> 글 속 삽입
+    </button>
+    <button id="btnModeFree" class="popup-chip free-chip">
+      <span>📌</span> 자유 이동
+    </button>
+    <div class="popup-sep"></div>
+    <button id="btnRotateLeft" class="popup-chip icon-only" title="왼쪽 15도 회전">↺</button>
+    <button id="btnRotateRight" class="popup-chip icon-only" title="오른쪽 15도 회전">↻</button>
+    <button id="btnTogglePolaroid" class="popup-chip icon-only" title="폴라로이드 액자">🖼️</button>
+    <button id="btnDeleteImage" class="popup-chip icon-only delete" title="삭제">🗑️</button>
+  </div>
+
+  <!-- 다이어리 프로필 & 커서 설정 모달 -->
+  <div id="profileSettingsModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>⚙️ 다이어리 이름 & 커서/프로필 설정</h3>
+        <button class="modal-close" data-close="profileSettingsModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label for="settingDiaryName">1. 일기장 이름 지정</label>
+          <input type="text" id="settingDiaryName" placeholder="예: 은하의 비밀 다이어리">
+        </div>
+
+        <div class="input-group">
+          <label>2. 프로필 아이콘 선택</label>
+          <div id="profileEmojiSelector" class="profile-emoji-picker">
+            <button class="profile-emoji-btn active" data-emoji="🌸">🌸</button>
+            <button class="profile-emoji-btn" data-emoji="🐾">🐾</button>
+            <button class="profile-emoji-btn" data-emoji="🧸">🧸</button>
+            <button class="profile-emoji-btn" data-emoji="🐱">🐱</button>
+            <button class="profile-emoji-btn" data-emoji="☕">☕</button>
+            <button class="profile-emoji-btn" data-emoji="🌟">🌟</button>
+            <button class="profile-emoji-btn" data-emoji="🌿">🌿</button>
+            <button class="profile-emoji-btn" data-emoji="🍰">🍰</button>
+          </div>
+          <div class="image-upload-row">
+            <span class="sub-label">또는 이미지 직접 업로드:</span>
+            <input type="file" id="settingProfileImageInput" accept="image/*">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>2-1. 파비콘 설정 (브라우저 탭 아이콘)</label>
+          <div class="image-upload-row">
+            <span class="sub-label">PNG 또는 ICO 파일 업로드:</span>
+            <input type="file" id="settingFaviconInput" accept=".png,.ico,image/png,image/x-icon,image/vnd.microsoft.icon">
+          </div>
+          <div id="faviconPreviewRow" class="favicon-preview-row hidden">
+            <img id="faviconPreviewImg" class="favicon-preview-img" alt="파비콘 미리보기">
+            <span class="favicon-preview-label">현재 파비콘</span>
+            <button type="button" id="btnRemoveFavicon" class="favicon-remove-btn">기본으로 되돌리기</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="settingCursorUrl">3. 마우스 커서 지정 (Cursors-4U CSS / URL 입력 지원)</label>
+          <input type="text" id="settingCursorUrl" placeholder="예: https://cur.cursors-4u.net/symbols/sym-1/sym2.cur">
+          <div class="cursor-presets">
+            <span class="sub-label">커서 프리셋:</span>
+            <button class="preset-btn" data-cursor="default">기본</button>
+            <button class="preset-btn" data-cursor="cat">🐾 고양이</button>
+            <button class="preset-btn" data-cursor="heart">💖 하트</button>
+            <button class="preset-btn" data-cursor="star">⭐ 별빛</button>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label for="settingSubtitle">4. 일기장 하단 서브 문구</label>
+          <input type="text" id="settingSubtitle" placeholder="예: 오늘 하루도 고생 많았어요, 나만의 속도로 쉬어가요.">
+        </div>
+
+        <div class="modal-btns">
+          <button id="btnSaveProfileSettings" class="m-btn primary">설정 저장하기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gist 설정 모달 -->
+  <div id="gistModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>☁️ GitHub Gist 동기화</h3>
+        <button class="modal-close" data-close="gistModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <p>GitHub Personal Access Token을 등록하면 PC와 스마트폰이 실시간으로 동기화됩니다.</p>
+        <div class="input-group">
+          <label for="gistTokenInput">Personal Access Token</label>
+          <input type="password" id="gistTokenInput" placeholder="ghp_xxxxxxxxxxxxxx">
+        </div>
+        <div class="input-group">
+          <label for="gistIdInput">Gist ID (자동 생성됨)</label>
+          <input type="text" id="gistIdInput" placeholder="Gist ID">
+        </div>
+        <div class="modal-btns">
+          <button id="btnSaveGistConfig" class="m-btn primary">설정 저장 및 동기화</button>
+          <button id="btnManualGistPull" class="m-btn">Gist에서 불러오기</button>
+        </div>
+        <div id="gistStatusMessage" class="gist-status"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -42,8 +42,8 @@
               <span>📁</span> diary_data.json 연결
             </button>
             <div class="dropdown-divider"></div>
-            <button id="btnGistSync" class="dropdown-item" title="GitHub 깃허브 동기화">
-              <span>☁️</span> Gist 동기화
+            <button id="btnRepoSync" class="dropdown-item" title="GitHub 저장소 동기화">
+              <span>🐙</span> 저장소 동기화
             </button>
             <div class="dropdown-divider"></div>
             <button id="btnExport" class="dropdown-item" title="JSON 백업">
@@ -257,6 +257,9 @@
     <button id="btnModeFree" class="popup-chip free-chip">
       <span>📌</span> 자유 이동
     </button>
+    <button id="btnToggleClip" class="popup-chip clip-chip" title="종이 가장자리에 사진 끼우기 (가장자리 밖으로 일부 넘치게 배치)">
+      <span>✂️</span> 끼우기
+    </button>
     <div class="popup-sep"></div>
     <button id="btnRotateLeft" class="popup-chip icon-only" title="왼쪽 15도 회전">↺</button>
     <button id="btnRotateRight" class="popup-chip icon-only" title="오른쪽 15도 회전">↻</button>
@@ -332,28 +335,41 @@
     </div>
   </div>
 
-  <!-- Gist 설정 모달 -->
-  <div id="gistModal" class="modal-backdrop hidden">
+  <!-- GitHub 일반 저장소 설정 모달 -->
+  <div id="repoModal" class="modal-backdrop hidden">
     <div class="modal-card">
       <div class="modal-head">
-        <h3>☁️ GitHub Gist 동기화</h3>
-        <button class="modal-close" data-close="gistModal">✕</button>
+        <h3>🐙 GitHub 저장소 동기화</h3>
+        <button class="modal-close" data-close="repoModal">✕</button>
       </div>
       <div class="modal-body">
-        <p>GitHub Personal Access Token을 등록하면 PC와 스마트폰이 실시간으로 동기화됩니다.</p>
+        <p>GitHub Private 저장소를 서버처럼 사용하여 용량 제한 없이 데이터를 동기화합니다.</p>
         <div class="input-group">
-          <label for="gistTokenInput">Personal Access Token</label>
-          <input type="password" id="gistTokenInput" placeholder="ghp_xxxxxxxxxxxxxx">
+          <label for="repoTokenInput">Personal Access Token (PAT)</label>
+          <input type="password" id="repoTokenInput" placeholder="github_pat_xxxxxxxxxxxxxx">
         </div>
         <div class="input-group">
-          <label for="gistIdInput">Gist ID (자동 생성됨)</label>
-          <input type="text" id="gistIdInput" placeholder="Gist ID">
+          <label for="repoOwnerInput">GitHub Username (사용자 아이디)</label>
+          <input type="text" id="repoOwnerInput" placeholder="예: gildong">
+        </div>
+        <div class="input-group">
+          <label for="repoNameInput">저장소 이름 (Repository Name)</label>
+          <input type="text" id="repoNameInput" placeholder="예: my-diary">
+        </div>
+        <div class="input-group">
+          <label for="repoBranchInput">브랜치 (Branch)</label>
+          <input type="text" id="repoBranchInput" placeholder="main" value="main">
+        </div>
+        <div class="input-group">
+          <label for="repoPathInput">저장 파일명 (File Path)</label>
+          <input type="text" id="repoPathInput" placeholder="diary_{year}.json" value="diary_{year}.json">
         </div>
         <div class="modal-btns">
-          <button id="btnSaveGistConfig" class="m-btn primary">설정 저장 및 동기화</button>
-          <button id="btnManualGistPull" class="m-btn">Gist에서 불러오기</button>
+          <button id="btnSaveRepoConfig" class="m-btn primary">설정 저장 및 업로드 (Push)</button>
+          <button id="btnManualRepoPull" class="m-btn">저장소에서 불러오기 (Pull)</button>
         </div>
-        <div id="gistStatusMessage" class="gist-status"></div>
+        <div id="repoStatusMessage" class="gist-status"></div>
+        <div style="font-size: 10px; color: #ccc; text-align: right; margin-top: 15px;">App Version: v1.8 (Manual Pull Only)</div>
       </div>
     </div>
   </div>
